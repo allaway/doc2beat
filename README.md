@@ -52,7 +52,7 @@ The tool generates an `output.csv` file with the following columns:
 
 ## Workflow
 
-1. If song_style is not provided, the LLM generates a random song style prompt (<100 characters)
+1. If song_style is not provided, the LLM generates a random song style prompt (up to 1000 characters)
 2. The document content is retrieved from the URL
-3. The LLM generates song lyrics based on the document content and song style
+3. The LLM generates song lyrics based on the document content and song style (up to 5000 characters, but can be shorter based on content)
 4. Results are saved to `output.csv`

@@ -43,11 +43,11 @@ class Doc2Beat:
             document_url: URL of the documentation
 
         Returns:
-            Song style prompt (under 100 characters)
+            Song style prompt (under 1000 characters)
         """
         prompt = (
             "Generate a random song style prompt (not instrumental) for a song generation model. "
-            "The style should be under 100 characters. "
+            "The style should be under 1000 characters. "
             "Output ONLY the song style prompt, nothing else. "
             "Examples: 'upbeat pop with electronic elements', 'soulful jazz ballad', 'energetic rock anthem'"
         )
@@ -62,9 +62,9 @@ class Doc2Beat:
         )
 
         song_style = response.choices[0].message.content.strip()
-        # Ensure it's under 100 characters
-        if len(song_style) > 100:
-            song_style = song_style[:97] + "..."
+        # Ensure it's under 1000 characters
+        if len(song_style) > 1000:
+            song_style = song_style[:997] + "..."
         return song_style
 
     def fetch_document_content(self, document_url: str) -> str:
@@ -94,14 +94,18 @@ class Doc2Beat:
             song_style: The style of song to generate
 
         Returns:
-            Generated song lyrics
+            Generated song lyrics (up to 5000 characters)
         """
+        # Limit document content to prevent overly long lyrics
+        content_for_prompt = document_content[:8000]
+        
         prompt = f"""Based on the following technical documentation, create song lyrics in the style: "{song_style}"
 
 The song should communicate the key concepts from the documentation in an easy-to-understand and fun way.
+The lyrics should be no longer than 5000 characters, but can be shorter if the content is brief.
 
 Documentation content:
-{document_content[:8000]}
+{content_for_prompt}
 
 Output ONLY the song lyrics, nothing else."""
 
@@ -114,7 +118,11 @@ Output ONLY the song lyrics, nothing else."""
             temperature=0.8,
         )
 
-        return response.choices[0].message.content.strip()
+        lyrics = response.choices[0].message.content.strip()
+        # Ensure lyrics don't exceed 5000 characters
+        if len(lyrics) > 5000:
+            lyrics = lyrics[:4997] + "..."
+        return lyrics
 
     def process_single_input(
         self,
