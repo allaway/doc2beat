@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc2beat"
+version = "0.1.0"
+description = "Convert technical documentation into easy-to-understand songs"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Robert Allaway"}
+]
+dependencies = [
+    "requests>=2.31.0",
+    "openai>=1.0.0",
+    "pyyaml>=6.0",
+    "pandas>=2.0.0",
+]
+
+[project.scripts]
+doc2beat = "doc2beat.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
