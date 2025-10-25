@@ -56,7 +56,7 @@ def test_basic_functionality():
         # Try with example_creds.yaml (will fail if no API key)
         doc2beat = Doc2Beat(creds_path='example_creds.yaml')
         print("   ✓ Doc2Beat class can be instantiated")
-    except Exception as e:
+    except (FileNotFoundError, KeyError) as e:
         print(f"   ⚠ Doc2Beat instantiation requires valid API key: {e}")
         # This is expected without real credentials
     
