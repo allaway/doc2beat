@@ -51,8 +51,70 @@ class Doc2Beat:
         """
         import random
         
-        # Comprehensive list of music genres from Wikipedia
-        music_genres = [
+        # Load genres based on extra_creative setting
+        if self.extra_creative:
+            # Load Suno v5 experimental genres
+            try:
+                import pandas as pd
+                df = pd.read_csv('suno_v5_genres.csv')
+                music_genres = df['genre'].tolist()
+            except Exception as e:
+                print(f"Warning: Could not load suno_v5_genres.csv: {e}, using Wikipedia genres")
+                music_genres = self._get_default_genres()
+        else:
+            # Use Wikipedia comprehensive genres
+            music_genres = self._get_default_genres()
+        
+        # Randomly shuffle the genre list for each generation
+        random.shuffle(music_genres)
+        selected_genres = music_genres[:5]  # Pick first 5 from shuffled list
+
+        # Base prompt
+        prompt_start = (
+            f"Generate a VOCAL song description for Suno AI under 1000 characters. "
+            f"RANDOM GENRE SELECTION: From this shuffled list, randomly pick ONE genre: {', '.join(selected_genres)}. "
+            f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
+        )
+        
+        # Add creative elements if extra_creative is enabled
+        if self.extra_creative:
+            prompt = (
+                prompt_start +
+                f"BE INVENTIVE: Add unexpected sonic twists, unusual vocal effects, creative instrumentation choices, or genre fusions. Think outside the box - add experimental elements, unusual production techniques, or bold creative choices. "
+                f"Include: genre/style with creative twists, tempo with variation, inventive vocal characteristics, unique instrumentation, mood/atmosphere, and lyrical themes. "
+                f"Be specific, vivid, and CREATIVE. Make it memorable and interesting! Output ONLY the song style prompt, nothing else."
+            )
+        else:
+            prompt = (
+                prompt_start +
+                f"Include: genre/style, tempo, vocal characteristics, instrumentation, mood/atmosphere, and lyrical themes. "
+                f"Be specific and vivid. Output ONLY the song style prompt, nothing else."
+            )
+        
+        # Set system message based on extra_creative
+        if self.extra_creative:
+            system_message = "You are a creative and inventive assistant that generates unique VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. Be highly creative: add unexpected sonic twists, unusual vocal effects, inventive instrumentation choices, experimental elements, and bold production techniques. You will be given a random selection of genres to choose from - pick ONE genre and build an inventive, memorable, and creative song style description around it. Be specific, vivid, and think outside the box!"
+        else:
+            system_message = "You are a helpful assistant that generates VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. You will be given a random selection of genres to choose from - pick ONE genre from the provided list and build a detailed song style description around it. Be specific about tempo, vocals, instrumentation, mood, and themes."
+        
+        response = self.client.chat.completions.create(
+            model=self.lyric_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=1.2,  # Even higher temperature for maximum randomness
+        )
+        
+        song_style = response.choices[0].message.content.strip()
+        # Ensure it's under 1000 characters
+        if len(song_style) > 1000:
+            song_style = song_style[:997] + "..."
+        return song_style
+
+    def _get_default_genres(self):
+        """Get the default comprehensive list of music genres from Wikipedia."""
+        return [
             # Classical
             "Baroque", "Classical", "Romantic", "Modern Classical", "Opera", "Chamber Music", "Symphony", "Concerto",
             
@@ -119,53 +181,6 @@ class Doc2Beat:
             # Other
             "New Age", "Worldbeat", "Fusion", "Crossover", "Experimental Rock", "Art Rock", "Prog Rock", "Space Rock", "Krautrock", "Canterbury Scene"
         ]
-        
-        # Randomly shuffle the genre list for each generation
-        random.shuffle(music_genres)
-        selected_genres = music_genres[:5]  # Pick first 5 from shuffled list
-        
-        # Base prompt
-        prompt_start = (
-            f"Generate a VOCAL song description for Suno AI under 1000 characters. "
-            f"RANDOM GENRE SELECTION: From this shuffled list, randomly pick ONE genre: {', '.join(selected_genres)}. "
-            f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
-        )
-        
-        # Add creative elements if extra_creative is enabled
-        if self.extra_creative:
-            prompt = (
-                prompt_start +
-                f"BE INVENTIVE: Add unexpected sonic twists, unusual vocal effects, creative instrumentation choices, or genre fusions. Think outside the box - add experimental elements, unusual production techniques, or bold creative choices. "
-                f"Include: genre/style with creative twists, tempo with variation, inventive vocal characteristics, unique instrumentation, mood/atmosphere, and lyrical themes. "
-                f"Be specific, vivid, and CREATIVE. Make it memorable and interesting! Output ONLY the song style prompt, nothing else."
-            )
-        else:
-            prompt = (
-                prompt_start +
-                f"Include: genre/style, tempo, vocal characteristics, instrumentation, mood/atmosphere, and lyrical themes. "
-                f"Be specific and vivid. Output ONLY the song style prompt, nothing else."
-            )
-
-        # Set system message based on extra_creative
-        if self.extra_creative:
-            system_message = "You are a creative and inventive assistant that generates unique VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. Be highly creative: add unexpected sonic twists, unusual vocal effects, inventive instrumentation choices, experimental elements, and bold production techniques. You will be given a random selection of genres to choose from - pick ONE genre and build an inventive, memorable, and creative song style description around it. Be specific, vivid, and think outside the box!"
-        else:
-            system_message = "You are a helpful assistant that generates VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. You will be given a random selection of genres to choose from - pick ONE genre from the provided list and build a detailed song style description around it. Be specific about tempo, vocals, instrumentation, mood, and themes."
-        
-        response = self.client.chat.completions.create(
-            model=self.lyric_model,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=1.2,  # Even higher temperature for maximum randomness
-        )
-
-        song_style = response.choices[0].message.content.strip()
-        # Ensure it's under 1000 characters
-        if len(song_style) > 1000:
-            song_style = song_style[:997] + "..."
-        return song_style
 
     def fetch_document_content(self, document_url: str) -> str:
         """
