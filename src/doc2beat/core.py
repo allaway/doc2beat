@@ -225,6 +225,7 @@ class Doc2Beat:
             
             # Look for common documentation content containers
             content_selectors = [
+                '#awsdocs-content', '#main-content', '#main-col-body',  # AWS docs
                 'main', 'article', '.content', '.documentation', '.doc-content',
                 '.main-content', '.page-content', '.post-content', '.entry-content',
                 '#content', '#main', '#documentation', '.markdown-body'
