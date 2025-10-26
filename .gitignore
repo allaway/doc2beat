@@ -212,3 +212,10 @@ output.csv
 
 # doc2beat output files
 songs/
+
+# doc2beat user-specific input files
+# Note: example_input.csv and suno_v5_genres.csv are tracked
+synapse_help_urls.csv
+final_synapse_urls.csv
+nf_synapse*.csv
+ad_glossary*.csv
