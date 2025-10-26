@@ -50,6 +50,12 @@ def main():
         help="Path to configuration YAML file (default: config.yaml)"
     )
 
+    parser.add_argument(
+        "--extra-creative",
+        action="store_true",
+        help="Enable extra creative and experimental style generation (default: False)"
+    )
+
     args = parser.parse_args()
 
     # Validate arguments
@@ -61,7 +67,7 @@ def main():
 
     try:
         # Initialize Doc2Beat
-        doc2beat = Doc2Beat(creds_path=args.creds, config_path=args.config)
+        doc2beat = Doc2Beat(creds_path=args.creds, config_path=args.config, extra_creative=args.extra_creative)
 
         # Process single URL
         if args.url:
