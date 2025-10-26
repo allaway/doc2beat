@@ -198,6 +198,21 @@ class Doc2Beat:
             # Extract the actual documentation content
             doc_content = self.extract_documentation_content(html_content)
             print(f"    Extracted {len(doc_content)} characters of documentation content")
+            
+            # Fallback: if extraction is too small (<300 chars), use the whole page
+            if len(doc_content) < 300:
+                print(f"    Extraction too small ({len(doc_content)} chars), using full page content")
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html_content, 'html.parser')
+                # Remove script and style tags but keep the rest
+                for element in soup(['script', 'style']):
+                    element.decompose()
+                doc_content = soup.get_text(separator=' ', strip=True)
+                # Limit to 8000 characters for prompt
+                if len(doc_content) > 8000:
+                    doc_content = doc_content[:8000]
+                print(f"    Using full page content: {len(doc_content)} characters")
+            
             return doc_content
         except Exception as e:
             print(f"Warning: Could not fetch content from {document_url}: {e}")
