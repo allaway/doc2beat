@@ -209,3 +209,6 @@ __marimo__/
 # doc2beat credentials
 creds.yaml
 output.csv
+
+# doc2beat output files
+songs/
