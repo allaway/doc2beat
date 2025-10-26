@@ -58,44 +58,40 @@ class Doc2Beat:
                 import pandas as pd
                 df = pd.read_csv('suno_v5_genres.csv')
                 music_genres = df['genre'].tolist()
+                use_combinations = True
             except Exception as e:
                 print(f"Warning: Could not load suno_v5_genres.csv: {e}, using Wikipedia genres")
                 music_genres = self._get_default_genres()
+                use_combinations = False
         else:
             # Use Wikipedia comprehensive genres
             music_genres = self._get_default_genres()
+            use_combinations = False
         
         # Randomly shuffle the genre list for each generation
         random.shuffle(music_genres)
         selected_genres = music_genres[:5]  # Pick first 5 from shuffled list
 
         # Base prompt
-        prompt_start = (
-            f"Generate a VOCAL song description for Suno AI under 1000 characters. "
-            f"RANDOM GENRE SELECTION: From this shuffled list, randomly pick ONE genre: {', '.join(selected_genres)}. "
-            f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
-        )
-        
-        # Add creative elements if extra_creative is enabled
-        if self.extra_creative:
+        if use_combinations:
             prompt = (
-                prompt_start +
-                f"BE INVENTIVE: Add unexpected sonic twists, unusual vocal effects, creative instrumentation choices, or genre fusions. Think outside the box - add experimental elements, unusual production techniques, or bold creative choices. "
-                f"Include: genre/style with creative twists, tempo with variation, inventive vocal characteristics, unique instrumentation, mood/atmosphere, and lyrical themes. "
-                f"Be specific, vivid, and CREATIVE. Make it memorable and interesting! Output ONLY the song style prompt, nothing else."
+                f"Generate a VOCAL song description for Suno AI under 1000 characters. "
+                f"GENRE SELECTION: From this list, choose ONE genre OR a creative combination of genres: {', '.join(selected_genres)}. "
+                f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
+                f"Include: genre/style, tempo, vocal characteristics, instrumentation, mood/atmosphere, and lyrical themes. "
+                f"Be specific and vivid. Output ONLY the song style prompt, nothing else."
             )
         else:
             prompt = (
-                prompt_start +
+                f"Generate a VOCAL song description for Suno AI under 1000 characters. "
+                f"RANDOM GENRE SELECTION: From this shuffled list, randomly pick ONE genre: {', '.join(selected_genres)}. "
+                f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
                 f"Include: genre/style, tempo, vocal characteristics, instrumentation, mood/atmosphere, and lyrical themes. "
                 f"Be specific and vivid. Output ONLY the song style prompt, nothing else."
             )
         
-        # Set system message based on extra_creative
-        if self.extra_creative:
-            system_message = "You are a creative and inventive assistant that generates unique VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. Be highly creative: add unexpected sonic twists, unusual vocal effects, inventive instrumentation choices, experimental elements, and bold production techniques. You will be given a random selection of genres to choose from - pick ONE genre and build an inventive, memorable, and creative song style description around it. Be specific, vivid, and think outside the box!"
-        else:
-            system_message = "You are a helpful assistant that generates VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. You will be given a random selection of genres to choose from - pick ONE genre from the provided list and build a detailed song style description around it. Be specific about tempo, vocals, instrumentation, mood, and themes."
+        # Use same system message for both modes
+        system_message = "You are a helpful assistant that generates VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. You will be given a random selection of genres to choose from - pick ONE genre from the provided list (or a creative combination if in extra_creative mode) and build a detailed song style description around it. Be specific about tempo, vocals, instrumentation, mood, and themes."
         
         response = self.client.chat.completions.create(
             model=self.lyric_model,
