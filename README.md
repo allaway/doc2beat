@@ -42,6 +42,13 @@ Process a single document with a specific song style:
 doc2beat --url "https://example.com/docs" --style "upbeat pop"
 ```
 
+Process a single document with a specific music genre:
+```bash
+doc2beat --url "https://example.com/docs" --genre "jazz"
+doc2beat --url "https://example.com/docs" --genre "electronic"
+doc2beat --url "https://example.com/docs" --genre "folk"
+```
+
 Process multiple documents from a CSV file:
 ```bash
 doc2beat --input input.csv

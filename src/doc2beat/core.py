@@ -39,17 +39,41 @@ class Doc2Beat:
             api_key=self.api_key,
         )
 
-    def generate_song_style(self, document_url: str) -> str:
+    def generate_song_style(self, document_url: str, genre: Optional[str] = None) -> str:
         """
         Generate a random song style prompt for the given document.
 
         Args:
             document_url: URL of the documentation
+            genre: Optional specific genre to use (overrides random selection)
 
         Returns:
             Song style prompt (under 1000 characters)
         """
         import random
+        
+        # If specific genre is provided, use it
+        if genre:
+            prompt = (
+                f"Generate a VOCAL song description for Suno AI under 1000 characters. "
+                f"USE THIS SPECIFIC GENRE: {genre}. "
+                f"CRITICAL: Must be a VOCAL genre - no instrumental music. "
+                f"Include: genre/style, tempo, vocal characteristics, instrumentation, mood/atmosphere, and lyrical themes. "
+                f"Be specific and vivid. Output ONLY the song style prompt, nothing else."
+            )
+            
+            system_message = "You are a helpful assistant that generates VOCAL song style prompts. Always specify vocal genres with singing - never instrumental music. Use the provided genre as the foundation and build a detailed song style description around it. Be specific about tempo, vocals, instrumentation, mood, and themes."
+            
+            response = self.client.chat.completions.create(
+                model=self.lyric_model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.8,
+            )
+            
+            return response.choices[0].message.content.strip()
         
         # Load genres based on extra_creative setting
         if self.extra_creative:
@@ -359,6 +383,7 @@ Output ONLY the song lyrics, nothing else."""
         self,
         document_url: str,
         song_style: Optional[str] = None,
+        genre: Optional[str] = None,
         verbose: bool = True
     ) -> Dict[str, str]:
         """
@@ -367,6 +392,7 @@ Output ONLY the song lyrics, nothing else."""
         Args:
             document_url: URL of the documentation
             song_style: Optional predefined song style
+            genre: Optional specific genre to use for style generation
             verbose: Whether to print detailed progress
 
         Returns:
@@ -378,8 +404,11 @@ Output ONLY the song lyrics, nothing else."""
         # Step 2: Generate song style if not provided
         if song_style is None:
             if verbose:
-                print("  Generating song style...")
-            song_style = self.generate_song_style(document_url)
+                if genre:
+                    print(f"  Generating song style from genre: {genre}...")
+                else:
+                    print("  Generating song style...")
+            song_style = self.generate_song_style(document_url, genre=genre)
         if verbose:
             print(f"  Song style: {song_style}")
 

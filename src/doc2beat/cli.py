@@ -24,6 +24,12 @@ def main():
     )
 
     parser.add_argument(
+        "--genre",
+        type=str,
+        help="Specific music genre to use for style generation (e.g., 'jazz', 'rock', 'electronic'). Overrides random selection."
+    )
+
+    parser.add_argument(
         "--input",
         type=str,
         help="Path to input CSV file with document_url and optional song_style columns"
@@ -71,7 +77,7 @@ def main():
 
         # Process single URL
         if args.url:
-            result = doc2beat.process_single_input(args.url, args.style)
+            result = doc2beat.process_single_input(args.url, args.style, args.genre)
             
             # Save to CSV
             import pandas as pd
