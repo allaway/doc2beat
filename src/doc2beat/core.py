@@ -208,9 +208,9 @@ class Doc2Beat:
                 for element in soup(['script', 'style']):
                     element.decompose()
                 doc_content = soup.get_text(separator=' ', strip=True)
-                # Limit to 8000 characters for prompt
-                if len(doc_content) > 8000:
-                    doc_content = doc_content[:8000]
+                # Limit to 20000 characters for prompt
+                if len(doc_content) > 20000:
+                    doc_content = doc_content[:20000]
                 print(f"    Using full page content: {len(doc_content)} characters")
             
             return doc_content
@@ -314,7 +314,7 @@ class Doc2Beat:
             Generated song lyrics (up to 5000 characters)
         """
         # Limit document content to prevent overly long lyrics
-        content_for_prompt = document_content[:8000]
+        content_for_prompt = document_content[:20000]
         
         prompt = f"""Based on the following technical documentation, create song lyrics in the style: "{song_style}"
 
